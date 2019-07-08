@@ -1,4 +1,5 @@
 require_relative "game_graphics.rb"
+require "yaml"
 
 class Game
   def initialize
@@ -7,20 +8,20 @@ class Game
     @letters_tried = []
     @turns_allotted = how_difficult
     @turns_remaining = @turns_allotted
+    @game_status = "playing"
     play_game
   end
+  attr_accessor :game_status
 
   def play_game
-    game_status = "playing"
-    while game_status == "playing"
+    while @game_status == "playing"
       show_board
       show_guess_count
       letter_guess
-      game_status = "won" if win_check
-      game_status = "lost" if @turns_remaining == 0
-      puts game_status
+      @game_status = "won" if win_check
+      @game_status = "lost" if @turns_remaining == 0
     end
-    inform_of_win_or_loss(game_status)
+    inform_of_win_loss_or_save
   end
 
   def show_board
@@ -41,6 +42,11 @@ class Game
     while letter == ""
       puts "Please pick a letter."
       guess = gets.chomp.downcase
+      if guess == 'save'
+        save_game
+        @game_status = "saved" 
+        break
+      end
       next unless ('a'..'z').include? guess
       if @letters_tried.include? guess
         puts "You've already tried that letter. Letters guessed: #{@letters_tried.join(", ")}"
@@ -48,6 +54,7 @@ class Game
       end
       letter = guess
     end
+    return if @game_status == "saved"
     @letters_tried << letter
     check_letter_against_hidden_word(letter)
   end
@@ -72,13 +79,15 @@ class Game
     @letters_of_guessed_word.none? {|let| let == "_"} 
   end
 
-  def inform_of_win_or_loss(won_or_lost)
-    puts "You won!" if won_or_lost == "won"
-    if won_or_lost == "lost"
+  def inform_of_win_loss_or_save()
+    puts "You won!  #{@letters_of_hidden_word.join("")}" if @game_status == "won"
+    if @game_status == "lost"
       puts "The word was '#{@letters_of_hidden_word.join("")}'"
       puts "  You lost. :p"
     end
-
+    if @game_status == "saved"
+      puts "Your game has been saved."
+    end
   end
   
   def create_hidden_word_arr
@@ -106,6 +115,10 @@ class Game
     puts "Lets start with easy."
     return 7
   end
+
+  def save_game
+    now = Time.new
+    File.open("../saves/#{@letters_of_guessed_word.join("")}-#{now.day}_#{now.hour}_#{now.min}.yml", "w"){|file| file.puts YAML::dump(self)}
+  end
 end
   
-first_game = Game.new

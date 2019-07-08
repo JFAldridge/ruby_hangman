@@ -1,0 +1,27 @@
+--- !ruby/object:Game
+letters_of_hidden_word:
+- t
+- a
+- n
+- g
+- e
+- n
+- t
+letters_of_guessed_word:
+- _
+- a
+- n
+- _
+- e
+- n
+- _
+letters_tried:
+- a
+- e
+- f
+- l
+- o
+- n
+turns_allotted: 7
+turns_remaining: 4
+game_status: playing
